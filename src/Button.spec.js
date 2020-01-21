@@ -1,35 +1,32 @@
-import React from 'react';
-import { create } from 'react-test-renderer';
-
-
-class Button extends React.Component {
-    constructor(props) {
-        super(props);
-    this.state = {
-        text: ''
-    };
-    this.handleClick = this.handleClick.bind(this);
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+import { act } from "react-dom/test-utils";
+let container;
+beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+});
+afterEach(() => {
+    document.body.removeChild(container);
+    container = null;
+});
+function Button(props) {
+    const [text, setText] = useState("");
+    function handleClick() {
+        setText("PROCEED TO CHECKOUT");
     }
-
-    handleClick() {
-        this.setState(() => {
-            return { text: 'PROCEED TO CHECKOUT'};
-        })
-    }
-    render() {
-        return (
-            <button onClick={this.handleClick}>
-                {this.state.text || this.props.text}
-            </button>
-        )
-    }
+    return <button onClick={handleClick}>{text || props.text}</button>;
 }
-describe('Button component', () => {
-   test('it shows the expected text when clicked (testing the wrong way)', () => {
-    const component = create(<Button text='SUBSCRIBE TO BASIC'/>);
-    const instance = component.root;
-    const button = instance.findByType('button');
-    button.props.onClick();
-    expect(button.props.children).toBe('PROCEED TO CHECKOUT');
-   });
+describe("Button component", () => {
+    test("it shows the expected text when clicked", () => {
+        act(() => {
+            ReactDOM.render(<Button text="SUBSCRIBE TO BASIC" />, container);
+        });
+        const button = container.getElementsByTagName("button")[0];
+        expect(button.textContent).toBe("SUBSCRIBE TO BASIC");
+        act(() => {
+            button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        });
+        expect(button.textContent).toBe("PROCEED TO CHECKOUT");
+    });
 });
